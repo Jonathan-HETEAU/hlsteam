@@ -1,0 +1,6 @@
+-cp .
+--macro include('steam',true,['steam.helpers.MacroHelper'])
+-D doc-gen
+--no-output
+-hl steam.hl
+-xml docs/api/hlsteam_hl.xml
