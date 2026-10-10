@@ -1,5 +1,8 @@
 package steam;
 
+/**
+	The visibility of a lobby (Steamworks `ELobbyType`).
+**/
 enum abstract LobbyKind(Int) {
 	/**
 		Only way to join the lobby is to invite to someone else
@@ -19,19 +22,55 @@ enum abstract LobbyKind(Int) {
 	public var Invisible = 3;
 }
 
+/**
+	A comparison of a lobby list filter (Steamworks `ELobbyComparison`): how the lobby value compares to the filter value.
+**/
 enum abstract ComparisonFilter(Int) {
+	/**
+		Less than or equal.
+	**/
 	var LessThanEqual = -2;
+	/**
+		Less than.
+	**/
 	var LessThan = -1;
+	/**
+		Equal.
+	**/
 	var Equal = 0;
+	/**
+		Greater than.
+	**/
 	var GreaterThan = 1;
+	/**
+		Greater than or equal.
+	**/
 	var GreaterThanEqual = 2;
+	/**
+		Not equal.
+	**/
 	var NotEqual = 3;
 }
 
+/**
+	The geographic distance of the lobbies to list (Steamworks `ELobbyDistanceFilter`).
+**/
 enum abstract DistanceFilter(Int) {
+	/**
+		The same region only.
+	**/
 	var Close = 0;
+	/**
+		The same or nearby regions.
+	**/
 	var Default = 1;
+	/**
+		About half-way around the globe.
+	**/
 	var Far = 2;
+	/**
+		No filtering.
+	**/
 	var Worldwide = 3;
 }
 
@@ -43,14 +82,35 @@ private enum LobbyChatFlag {
 	Banned;
 }
 
+/**
+	The filters of `Matchmaking.requestLobbyList`.
+**/
 typedef LobbyListFilters = {
+	/**
+		Filters on string lobby data.
+	**/
 	@:optional var stringFilters : Array<{ key : String, value : String, comparison : ComparisonFilter }>;
+	/**
+		Filters on numerical lobby data.
+	**/
 	@:optional var intFilters : Array<{ key : String, value : Int, comparison : ComparisonFilter }>;
+	/**
+		Sorts the lobbies by the distance of the numerical data to the value.
+	**/
 	@:optional var nearFilters : Array<{ key : String, value : Int }>;
+	/**
+		The geographic distance.
+	**/
 	@:optional var distance : DistanceFilter;
+	/**
+		The minimum number of free slots.
+	**/
 	@:optional var availableSlots : Int;
 }
 
+/**
+	The lobbies: creation, search and invitations (Steamworks `ISteamMatchmaking`).
+**/
 @:hlNative("steam")
 class Matchmaking {
 
@@ -110,6 +170,9 @@ class Matchmaking {
 		return l;
 	}
 
+	/**
+		Searches lobbies: `onLobbyList` is called with the lobbies found, or `null` on error.
+	**/
 	public static function requestLobbyList( onLobbyList : Array<Lobby> -> Void, ?filters : LobbyListFilters, ?resultsCount : Int ) {
 		if( filters != null ) {
 			var f = filters;
@@ -142,6 +205,9 @@ class Matchmaking {
 		return null;
 	}
 
+	/**
+		Creates a lobby, and joins it: `onResult` is called with the lobby, or `null` on error.
+	**/
 	public static function createLobby( kind : LobbyKind, maxPlayers : Int, onResult : Lobby -> Void ) : AsyncCall {
 		return create_lobby(kind, maxPlayers, function(uid, error) {
 			if( error ) {
@@ -159,6 +225,9 @@ class Matchmaking {
 	}
 
 	static var inviteCheck = false;
+	/**
+		Sets the function called when the user accepts an invitation to a lobby, and calls it if the game was launched by an invitation (`+connect_lobby` command line argument).
+	**/
 	public static function checkInvite( onInvite : Lobby -> Void ) {
 
 		onInvited = function(lobby, _) onInvite(lobby);

@@ -10,31 +10,91 @@ private enum LeaderboardOp
 	DOWNLOAD(id:String);
 }
 
+/**
+	A corner of the screen where the Steam notifications appear.
+**/
 enum abstract SteamNotificationPosition(Int) to Int
 {
+	/**
+		The top left corner.
+	**/
 	var TopLeft = 0;
+	/**
+		The top right corner.
+	**/
 	var TopRight = 1;
+	/**
+		The bottom left corner.
+	**/
 	var BottomLeft = 2;
+	/**
+		The bottom right corner.
+	**/
 	var BottomRight = 3;
 }
 
+/**
+	A handle of a connected controller (Steam Input).
+**/
 typedef ControllerHandle = Int64;
+/**
+	A handle of a controller action set.
+**/
 typedef ControllerActionSetHandle = Int;
+/**
+	A handle of a digital (button) controller action.
+**/
 typedef ControllerDigitalActionHandle = Int;
+/**
+	A handle of an analog controller action.
+**/
 typedef ControllerAnalogActionHandle = Int;
 
+/**
+	The events sent by the native library to `Api` (handled internally).
+**/
 enum abstract EventType(Int) {
+	/**
+		No event.
+	**/
 	var None                              = 0;
+	/**
+		The gamepad text input was closed (see `Api.whenGamepadTextInputDismissed`).
+	**/
 	var GamepadTextInputDismissed         = 1;
+	/**
+		The stats and achievements of the user were received.
+	**/
 	var UserStatsReceived                 = 2;
+	/**
+		The stats were stored (retried if it failed).
+	**/
 	var UserStatsStored                   = 3;
+	/**
+		An achievement was stored (see `Api.whenAchievementStored`).
+	**/
 	var UserAchievementStored             = 4;
+	/**
+		A leaderboard was found.
+	**/
 	var LeaderboardFound                  = 5;
+	/**
+		A leaderboard score was uploaded (see `Api.whenLeaderboardScoreUploaded`).
+	**/
 	var ScoreUploaded                     = 6;
+	/**
+		Leaderboard scores were downloaded (see `Api.whenLeaderboardScoreDownloaded`).
+	**/
 	var ScoreDownloaded                   = 7;
+	/**
+		The global stats were received.
+	**/
 	var GlobalStatsReceived               = 8;
 }
 
+/**
+	The entry point of the Steam API: call `init` at startup, then use the functions of this class (achievements, stats, leaderboards, overlay, ownership) and of the other classes of the `steam` package. The Steam callbacks are run by `sync`, called automatically by the main loop.
+**/
 @:hlNative("steam")
 class Api
 {
@@ -44,6 +104,9 @@ class Api
 	 * Whether the Steam API is detected & initialized or not. If false, all calls will fail
 	 */
 	public static var active(default, null):Bool = false;
+	/**
+		The Steam app id given to `init`.
+	**/
 	public static var appId(default, null) : Int;
 
 	/**
@@ -53,10 +116,25 @@ class Api
 
 	// User-settable callbacks:
 
+	/**
+		Called when the gamepad text input is closed, with the entered text, or `null` if it was cancelled.
+	**/
 	public static var whenGamepadTextInputDismissed:String->Void;
+	/**
+		Called when an achievement was stored, with its API name.
+	**/
 	public static var whenAchievementStored:String->Void;
+	/**
+		Called with each score downloaded by `downloadLeaderboardScore`.
+	**/
 	public static var whenLeaderboardScoreDownloaded:LeaderboardScore->Void;
+	/**
+		Called when a score was uploaded by `uploadLeaderboardScore`.
+	**/
 	public static var whenLeaderboardScoreUploaded:LeaderboardScore->Void;
+	/**
+		Called when the Steam overlay is opened (`true`) or closed (`false`).
+	**/
 	public static var onOverlay : Bool -> Void;
 
 	/**
@@ -112,6 +190,9 @@ class Api
 	static var globalEvents = new Map<Int,Dynamic->Void>();
 	static var authTicketCallbacks : Map<Int, Bool->Void> = new Map();
 
+	/**
+		Sets the function called for a Steam callback, by its callback id (`k_iCallback` of the Steamworks structure). Used by the classes of the `steam` package.
+	**/
 	@:noComplete public static function registerGlobalEvent( event : Int, callb : Dynamic -> Void ) {
 		globalEvents.set(event, callb);
 	}
@@ -124,9 +205,15 @@ class Api
 			customTrace("Unhandled global event #"+event+" ("+data+")");
 	}
 
+	/**
+		Not implemented: does nothing.
+	**/
 	public static function setNotificationPosition( pos:SteamNotificationPosition ) {
 	}
 
+	/**
+		Runs the Steam callbacks and stores the stats if requested. Called by the main loop after `init`.
+	**/
 	public static function sync() {
 		if (!active) return;
 		_RunCallbacks();
@@ -148,6 +235,9 @@ class Api
 		return active && report("clearAchievement", [id], _ClearAchievement(@:privateAccess id.toUtf8()));
 	}
 
+	/**
+		Requests the score of the user in the leaderboard, received by `whenLeaderboardScoreDownloaded`. Returns `false` if Steam is not active.
+	**/
 	public static function downloadLeaderboardScore(id:String):Bool {
 		if (!active) return false;
 		var startProcessingNow = (leaderboardOps.length == 0);
@@ -193,11 +283,17 @@ class Api
 		return @:privateAccess String.fromUTF8(_GetAchievementDisplayAttribute(@:privateAccess id.toUtf8(), @:privateAccess "name".toUtf8()));
 	}
 
+	/**
+		Returns the language selected by the user for the game (`english`, `french`...), or `null`.
+	**/
 	public static function getCurrentGameLanguage():String {
 		var l = _GetCurrentGameLanguage();
 		return l==null ? null : @:privateAccess String.fromUTF8(l);
 	}
 
+	/**
+		Returns the name of the beta branch the user is on, or `null`.
+	**/
 	public static function getCurrentBetaName():String {
 		var l = _GetCurrentBetaName();
 		return l == null ? null : @:privateAccess String.fromUTF8(l);
@@ -231,6 +327,9 @@ class Api
 		return val;
 	}
 
+	/**
+		Returns the current user, or `null` if Steam is not active.
+	**/
 	public static function getUser() {
 		return active ? User.fromUID(get_steam_id()) : null;
 	}
@@ -239,16 +338,25 @@ class Api
 		return null;
 	}
 
+	/**
+		Shows a progress notification for the achievement.
+	**/
 	public static function indicateAchievementProgress(id:String, curProgress:Int, maxProgress:Int):Bool {
 		return active && report("indicateAchivevementProgress", [id, Std.string(curProgress), Std.string(maxProgress)], _IndicateAchievementProgress(@:privateAccess id.toUtf8(), curProgress, maxProgress));
 	}
 
+	/**
+		Tells if the Steam overlay is enabled.
+	**/
 	public static function isOverlayEnabled():Bool {
 		if (!active)
 			return false;
 		return _IsOverlayEnabled();
 	}
 
+	/**
+		Tells if the DLC of the given app id is installed.
+	**/
 	public static function isDlcInstalled( appid : Int ) : Bool {
 		if( !active )
 			return false;
@@ -265,6 +373,9 @@ class Api
 		return null;
 	}
 
+	/**
+		Returns the install folder of the app, or `null`.
+	**/
 	public static function getAppInstallDir( appid : Int ) : String {
 		var dir = _GetAppInstallDir(appid);
 		if(dir == null)
@@ -272,54 +383,84 @@ class Api
 		return @:privateAccess String.fromUTF8(dir);
 	}
 
+	/**
+		Tells if the user owns the app (from its app ownership ticket). Returns `false` if the native library doesn't have this function.
+	**/
 	@:hlNative("?steam","is_app_owned")
 	public static function isAppOwned( appid : Int ) : Bool {
 		return false;
 	}
 
+	/**
+		Tells if the app is installed. Returns `false` if the native library doesn't have this function.
+	**/
 	@:hlNative("?steam","is_app_installed")
 	public static function isAppInstalled( appid : Int ) : Bool {
 		return false;
 	}
 
+	/**
+		Tells if the overlay needs the game to present a frame (when the game doesn't render continuously).
+	**/
 	public static function BOverlayNeedsPresent() {
 		if (!active)
 			return false;
 		return _BOverlayNeedsPresent();
 	}
 
+	/**
+		Tells if Steam runs in Big Picture mode.
+	**/
 	public static function isSteamInBigPictureMode() {
 		if (!active)
 			return false;
 		return _IsSteamInBigPictureMode();
 	}
 
+	/**
+		Tells if the game runs on a Steam Deck.
+	**/
 	public static function isSteamRunningOnSteamDeck() {
 		if (!active)
 			return false;
 		return _IsSteamRunningOnSteamDeck();
 	}
 
+	/**
+		Tells if the Steam client is running.
+	**/
 	public static function isSteamRunning() {
 		if (!active)
 			return false;
 		return _IsSteamRunning();
 	}
 
+	/**
+		Opens the web page in the Steam overlay.
+	**/
 	public static function openOverlay(url:String) {
 		if (!active) return;
 		_OpenOverlay(@:privateAccess url.toUtf8());
 	}
 
+	/**
+		Tells if the game was not launched by Steam: Steam then restarts it, and the game should exit. Call it before `init`.
+	**/
 	public static function restartIfNecessary( appId : Int ):Bool {
 		return _RestartAppIfNecessary( appId );
 	}
 
+	/**
+		Shuts down the Steam API.
+	**/
 	public static function shutdown() {
 		if (!active) return;
 		_Shutdown();
 	}
 
+	/**
+		Unlocks the achievement. Call `storeStats` to send it.
+	**/
 	public static function setAchievement(id:String):Bool {
 		return active && report("setAchievement", [id], _SetAchievement(@:privateAccess id.toUtf8()));
 	}
@@ -373,10 +514,16 @@ class Api
 		return active && report("setStatInt", [id, Std.string(val)], _SetStatInt(@:privateAccess id.toUtf8(), val));
 	}
 
+	/**
+		Sends the changed stats and achievements to the server.
+	**/
 	public static function storeStats():Bool {
 		return active && report("storeStats", [], _StoreStats());
 	}
 
+	/**
+		Uploads a score to its leaderboard, if it is better than the previous one (`whenLeaderboardScoreUploaded` is called). Returns `false` if Steam is not active.
+	**/
 	public static function uploadLeaderboardScore(score:LeaderboardScore):Bool {
 		if (!active) return false;
 		var startProcessingNow = (leaderboardOps.length == 0);
@@ -386,6 +533,9 @@ class Api
 		return true;
 	}
 
+	/**
+		Returns an authentication session ticket, to send to a server which checks it with Steam, or `null`. `onReady` is called with `true` when the ticket is valid, or `false` on error or after 15 seconds.
+	**/
 	public static function getAuthTicket( ?onReady : Bool->Void ) : haxe.io.Bytes {
 		var size = 0;
 		var authTicket = 0;
@@ -407,6 +557,9 @@ class Api
 		return ticket.toBytes(size);
 	}
 
+	/**
+		Requests an encrypted app ticket containing the data (or `null`), given to `onReady` (`null` on failure).
+	**/
 	public static function getEncryptedAppTicket(data : haxe.io.Bytes, onReady : haxe.io.Bytes->Void ) : Void {
 		var hlb = data != null ? hl.Bytes.fromBytes(data) : null;
 		var len = data != null ? data.length : 0;
@@ -427,6 +580,9 @@ class Api
 	private static var leaderboardIds:Array<String>;
 	private static var leaderboardOps:List<LeaderboardOp>;
 
+	/**
+		Prints a log message of the API. Prints it with `Sys.println` by default.
+	**/
 	public static dynamic function customTrace(str:String) {
 		Sys.println(str);
 	}
@@ -539,18 +695,48 @@ class Api
 	@:hlNative("?steam","request_encrypted_app_ticket") private static function _RequestEncryptedAppTicket( data : hl.Bytes, size : Int, encryptedAppTicket : (hl.Bytes, Int) -> Void ) : Void { return; }
 	@:hlNative("steam","open_overlay") private static function _OpenOverlay( url : hl.Bytes ) : Bool { return false; }
 	@:hlNative("steam","get_current_beta_name") private static function _GetCurrentBetaName() : hl.Bytes { return null; }
+	/**
+		Tells if the user owns the game (or has it through a free weekend or Family Sharing).
+	**/
 	@:hlNative("?steam","is_subscribed") public static function isSubscribed() : Bool { return false; }
+	/**
+		Tells if the user has the game through Family Sharing.
+	**/
 	@:hlNative("?steam","is_subscribed_from_family_sharing") public static function isSubscribedFromFamilySharing() : Bool { return false; }
+	/**
+		Tells if the user has the game through a free weekend.
+	**/
 	@:hlNative("?steam","is_subscribed_from_free_weekend") public static function isSubscribedFromFreeWeekend() : Bool { return false; }
+	/**
+		Returns the time of the first purchase of the app, in seconds since 1970.
+	**/
 	@:hlNative("?steam","get_earliest_purchase_unix_time") public static function getEarliestPurchaseUnixTime( appId : Int ) : Int { return 0; }
 }
 
+/**
+	A leaderboard score.
+**/
 class LeaderboardScore {
+	/**
+		The name of the leaderboard.
+	**/
 	public var leaderboardId:String;
+	/**
+		The score.
+	**/
 	public var score:Int;
+	/**
+		Additional data stored with the score.
+	**/
 	public var detail:Int;
+	/**
+		The global rank, or `-1` if unknown.
+	**/
 	public var rank:Int;
 
+	/**
+		Creates a score.
+	**/
 	public function new(leaderboardId_:String, score_:Int, detail_:Int, rank_:Int=-1) {
 		leaderboardId = leaderboardId_;
 		score = score_;
@@ -558,10 +744,16 @@ class LeaderboardScore {
 		rank = rank_;
 	}
 
+	/**
+		Returns the score as `leaderboardId,score,detail,rank`.
+	**/
 	public function toString():String {
 		return leaderboardId + "," + score + "," + detail + "," + rank;
 	}
 
+	/**
+		Parses a score written by `toString`, or returns `null`.
+	**/
 	public static function fromString(str:String):LeaderboardScore {
 		var tokens = str.split(",");
 		if (tokens.length == 4)

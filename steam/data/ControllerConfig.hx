@@ -13,14 +13,26 @@ import steam.data.Locale;
 class ControllerConfig
 {
 
+	/**
+		The action sets.
+	**/
 	public var actionSets:Array<ControllerActionSet>;
+	/**
+		The localized texts, by language.
+	**/
 	public var localizations:Array<ControllerLocalization>;
 	
+	/**
+		Creates an empty configuration.
+	**/
 	public function new()
 	{
 		
 	}
 	
+	/**
+		Returns a description of the configuration.
+	**/
 	public function toString():String
 	{
 		var str = "actions:\n";
@@ -53,16 +65,25 @@ class ControllerConfig
 		return str;
 	}
 	
+	/**
+		Reads the configuration from the VDF file.
+	**/
 	public static function fromVDF(str:String):ControllerConfig
 	{
 		return fromObject(VDF.parse(str));
 	}
 	
+	/**
+		Reads the configuration from the VDF file converted to JSON.
+	**/
 	public static function fromJSON(str:String):ControllerConfig
 	{
 		return fromObject(Json.parse(str));
 	}
 	
+	/**
+		Reads the configuration from the parsed VDF file. Throws if the `In Game Actions` or `actions` sections are missing.
+	**/
 	public static function fromObject(obj:Dynamic):ControllerConfig
 	{
 		var config = new ControllerConfig();
@@ -254,45 +275,126 @@ class ControllerConfig
 	}
 }
 
+/**
+	An action set: the actions available in a context of the game (menu, gameplay...).
+**/
 typedef ControllerActionSet = {
+	/**
+		The name of the action set.
+	**/
 	private var name:String;
+	/**
+		The localization key of its title.
+	**/
 	private var localizationKey:String;
+	/**
+		The digital actions.
+	**/
 	private var button:Array<ButtonAction>;
+	/**
+		The analog trigger actions.
+	**/
 	private var analogTrigger:Array<AnalogTriggerAction>;
+	/**
+		The stick, pad or gyro actions.
+	**/
 	private var stickPadGyro:Array<StickPadGyroAction>;
 };
 
 //typedef ControllerAction = OneOfThree<ButtonAction,AnalogTriggerAction,StickPadGyroAction>;
 
+/**
+	A digital (button) action.
+**/
 typedef ButtonAction = {
+	/**
+		The name of the action.
+	**/
 	var name:String;
+	/**
+		The localization key of its title.
+	**/
 	var localizationKey:String;
 }
 
+/**
+	An analog trigger action.
+**/
 typedef AnalogTriggerAction = {
+	/**
+		The name of the action.
+	**/
 	var name:String;
+	/**
+		The localization key of its title.
+	**/
 	var localizationKey:String;
 }
 
+/**
+	A stick, pad or gyro action.
+**/
 typedef StickPadGyroAction = {
+	/**
+		The name of the action.
+	**/
 	var name:String;
+	/**
+		The localization key of its title.
+	**/
 	var localizationKey:String;
+	/**
+		The input mode.
+	**/
 	var inputMode:AnalogInputMode;
+	/**
+		Tells if the action moves the mouse of the operating system.
+	**/
 	var osMouse:Bool;
 }
 
+/**
+	The localized texts of a language.
+**/
 typedef ControllerLocalization = {
+	/**
+		The language.
+	**/
 	var locale:Locale;
+	/**
+		The texts, by localization key.
+	**/
 	var values:Map<String,String>;
 }
 
+/**
+	The input mode of a stick, pad or gyro action.
+**/
 enum AnalogInputMode {
+	/**
+		The `absolute_mouse` input mode: the action gives mouse-like movements.
+	**/
 	AbsoluteMouse;
+	/**
+		The `joystick_move` input mode (default): the action gives a joystick position.
+	**/
 	JoystickMove;
 }
 
+/**
+	The type of a controller action.
+**/
 enum ControllerActionType {
+	/**
+		A digital action.
+	**/
 	Button;
+	/**
+		An analog trigger action.
+	**/
 	AnalogTrigger;
+	/**
+		A stick, pad or gyro action.
+	**/
 	StickPadGyro;
 }

@@ -40,6 +40,9 @@ class Controller
 	 */
 	public var MIN_ANALOG_VALUE(get, null):Float;
 
+	/**
+		The maximum duration of a single haptic pulse, in microseconds.
+	**/
 	public static inline var MAX_SINGLE_PULSE_TIME:Int = 65535;
 
 	/*************PUBLIC***************/
@@ -142,6 +145,8 @@ class Controller
 		return a.length;
 	}
 
+	static var connectedControllers : hl.NativeArray<Int>;
+
 	/**
 	 * Enumerate currently connected controllers
 	 *
@@ -151,7 +156,6 @@ class Controller
 	 *
 	 * @return controller handles
 	 */
-	static var connectedControllers : hl.NativeArray<Int>;
 	public function getConnectedControllers():Array<Int> {
 		if (!active) return [];
 		connectedControllers = _GetConnectedControllers(connectedControllers);
@@ -377,17 +381,26 @@ class Controller
 
 	}
 
+	/**
+		Restores the LED color set by the user.
+	**/
 	public function resetLEDColor(controller:Int) {
 		_SetLEDColor(controller, 0, 0, 0, ESteamControllerLEDFlags.RESTORE_USER_DEFAULT);
 	}
 
 
+	/**
+		Returns the XInput gamepad index of the controller, or `-1` if it is not emulating a gamepad.
+	**/
 	public function getGamepadIndexForController(controller:Int):Int {
 		//TODO
 		return -1;
 	}
 
 
+	/**
+		Returns the controller emulating the XInput gamepad index.
+	**/
 	public function getControllerForGamepadIndex(index:Int):Int {
 		//TODO
 		return -1;
@@ -543,49 +556,112 @@ class Controller
 	}
 }
 
+/**
+	The state of a digital action.
+**/
 abstract ControllerDigitalActionData(Int) from Int to Int{
 
 	public function new(i:Int) {
 		this = i;
 	}
 
+	/**
+		Tells if the action is pressed.
+	**/
 	public var bState(get, never):Bool;
 	private function get_bState():Bool { return this & 0x1 == 0x1; }
 
+	/**
+		Tells if the action is available in the current action set.
+	**/
 	public var bActive(get, never):Bool;
 	private function get_bActive():Bool { return this & 0x10 == 0x10; }
 }
 
+/**
+	The state of an analog action.
+**/
 class ControllerAnalogActionData
 {
+	/**
+		Tells if the action is available in the current action set.
+	**/
 	public var bActive:Bool = false;
+	/**
+		The mode of the source of the action.
+	**/
 	public var eMode:EControllerSourceMode = NONE;
+	/**
+		The X value.
+	**/
 	public var x:Float = 0.0;
+	/**
+		The Y value.
+	**/
 	public var y:Float = 0.0;
 
+	/**
+		Creates empty data.
+	**/
 	public function new(){}
 }
 
+/**
+	The motion data of a controller.
+**/
 class ControllerMotionData
 {
-	// Sensor-fused absolute rotation; will drift in heading
+	/**
+		The X of the sensor-fused absolute rotation quaternion (drifts in heading).
+	**/
 	public var rotQuatX:Float = 0.0;
+	/**
+		The Y of the absolute rotation quaternion.
+	**/
 	public var rotQuatY:Float = 0.0;
+	/**
+		The Z of the absolute rotation quaternion.
+	**/
 	public var rotQuatZ:Float = 0.0;
+	/**
+		The W of the absolute rotation quaternion.
+	**/
 	public var rotQuatW:Float = 0.0;
 
-	// Positional acceleration
+	/**
+		The X positional acceleration.
+	**/
 	public var posAccelX:Float = 0.0;
+	/**
+		The Y positional acceleration.
+	**/
 	public var posAccelY:Float = 0.0;
+	/**
+		The Z positional acceleration.
+	**/
 	public var posAccelZ:Float = 0.0;
 
-	// Angular velocity
+	/**
+		The X angular velocity.
+	**/
 	public var rotVelX:Float = 0.0;
+	/**
+		The Y angular velocity.
+	**/
 	public var rotVelY:Float = 0.0;
+	/**
+		The Z angular velocity.
+	**/
 	public var rotVelZ:Float = 0.0;
 
+	/**
+		Creates empty data.
+	**/
 	public function new(){}
 
+	/**
+		Returns a description of the data.
+	**/
 	public function toString():String{
 		return "ControllerMotionData{rotQuad:(" + rotQuatX + "," + rotQuatY + "," + rotQuatZ + "," + rotQuatW + "), " +
 									"posAccel:(" + posAccelX + "," + posAccelY + "," + posAccelZ + "), " +
@@ -593,180 +669,648 @@ class ControllerMotionData
 	}
 }
 
+/**
+	The flags of `Controller.setLEDColor`.
+**/
 class ESteamControllerLEDFlags {
 
+	/**
+		Sets the color.
+	**/
 	public static inline var SET_COLOR = 0x01;
+	/**
+		Restores the color set by the user.
+	**/
 	public static inline var RESTORE_USER_DEFAULT = 0x10;
 
 }
 
+/**
+	A physical input of a controller bound to an action (Steamworks `EControllerActionOrigin`). Converts from a number or a name (`"XBOXONE_A"`), and to its name.
+**/
 enum abstract EControllerActionOrigin(Int) to Int {
 
+	/**
+		The origins by name.
+	**/
 	public static var fromStringMap(default, null):Map<String, EControllerActionOrigin>
 		= MacroHelper.buildMap("steam.EControllerActionOrigin");
 
+	/**
+		The names by origin.
+	**/
 	public static var toStringMap(default, null):Map<EControllerActionOrigin, String>
 		= MacroHelper.buildMap("steam.EControllerActionOrigin", true);
 
+	/**
+		No origin.
+	**/
 	public var NONE = 0;
 
 	//Valve Steam Controller:
+	/**
+		Steam Controller: A button.
+	**/
 	public var A = 1;
+	/**
+		Steam Controller: B button.
+	**/
 	public var B = 2;
+	/**
+		Steam Controller: X button.
+	**/
 	public var X = 3;
+	/**
+		Steam Controller: Y button.
+	**/
 	public var Y = 4;
+	/**
+		Steam Controller: left bumper.
+	**/
 	public var LEFTBUMPER= 5;
+	/**
+		Steam Controller: right bumper.
+	**/
 	public var RIGHTBUMPER= 6;
+	/**
+		Steam Controller: left grip.
+	**/
 	public var LEFTGRIP = 7;
+	/**
+		Steam Controller: right grip.
+	**/
 	public var RIGHTGRIP = 8;
+	/**
+		Steam Controller: start button.
+	**/
 	public var START = 9;
+	/**
+		Steam Controller: back button.
+	**/
 	public var BACK = 10;
+	/**
+		Steam Controller: left trackpad, touch.
+	**/
 	public var LEFTPAD_TOUCH = 11;
+	/**
+		Steam Controller: left trackpad, swipe.
+	**/
 	public var LEFTPAD_SWIPE = 12;
+	/**
+		Steam Controller: left trackpad, click.
+	**/
 	public var LEFTPAD_CLICK = 13;
+	/**
+		Steam Controller: left trackpad, up.
+	**/
 	public var LEFTPAD_DPADNORTH = 14;
+	/**
+		Steam Controller: left trackpad, down.
+	**/
 	public var LEFTPAD_DPADSOUTH = 15;
+	/**
+		Steam Controller: left trackpad, left.
+	**/
 	public var LEFTPAD_DPADWEST = 16;
+	/**
+		Steam Controller: left trackpad, right.
+	**/
 	public var LEFTPAD_DPADEAST = 17;
+	/**
+		Steam Controller: right trackpad, touch.
+	**/
 	public var RIGHTPAD_TOUCH = 18;
+	/**
+		Steam Controller: right trackpad, swipe.
+	**/
 	public var RIGHTPAD_SWIPE = 19;
+	/**
+		Steam Controller: right trackpad, click.
+	**/
 	public var RIGHTPAD_CLICK = 20;
+	/**
+		Steam Controller: right trackpad, up.
+	**/
 	public var RIGHTPAD_DPADNORTH = 21;
+	/**
+		Steam Controller: right trackpad, down.
+	**/
 	public var RIGHTPAD_DPADSOUTH = 22;
+	/**
+		Steam Controller: right trackpad, left.
+	**/
 	public var RIGHTPAD_DPADWEST = 23;
+	/**
+		Steam Controller: right trackpad, right.
+	**/
 	public var RIGHTPAD_DPADEAST = 24;
+	/**
+		Steam Controller: left trigger, pull.
+	**/
 	public var LEFTTRIGGER_PULL = 25;
+	/**
+		Steam Controller: left trigger, click.
+	**/
 	public var LEFTTRIGGER_CLICK = 26;
+	/**
+		Steam Controller: right trigger, pull.
+	**/
 	public var RIGHTTRIGGER_PULL = 27;
+	/**
+		Steam Controller: right trigger, click.
+	**/
 	public var RIGHTTRIGGER_CLICK = 28;
+	/**
+		Steam Controller: left stick, move.
+	**/
 	public var LEFTSTICK_MOVE = 29;
+	/**
+		Steam Controller: left stick, click.
+	**/
 	public var LEFTSTICK_CLICK = 30;
+	/**
+		Steam Controller: left stick, up.
+	**/
 	public var LEFTSTICK_DPADNORTH = 31;
+	/**
+		Steam Controller: left stick, down.
+	**/
 	public var LEFTSTICK_DPADSOUTH = 32;
+	/**
+		Steam Controller: left stick, left.
+	**/
 	public var LEFTSTICK_DPADWEST = 33;
+	/**
+		Steam Controller: left stick, right.
+	**/
 	public var LEFTSTICK_DPADEAST = 34;
+	/**
+		Steam Controller: gyro, move.
+	**/
 	public var GYRO_MOVE = 35;
+	/**
+		Steam Controller: gyro, pitch.
+	**/
 	public var GYRO_PITCH = 36;
+	/**
+		Steam Controller: gyro, yaw.
+	**/
 	public var GYRO_YAW = 37;
+	/**
+		Steam Controller: gyro, roll.
+	**/
 	public var GYRO_ROLL = 38;
 
 	//Sony PlayStation DualShock 4:
+	/**
+		PS4 controller: cross button.
+	**/
 	public var PS4_X = 39;
+	/**
+		PS4 controller: circle button.
+	**/
 	public var PS4_CIRCLE = 40;
+	/**
+		PS4 controller: triangle button.
+	**/
 	public var PS4_TRIANGLE = 41;
+	/**
+		PS4 controller: square button.
+	**/
 	public var PS4_SQUARE = 42;
+	/**
+		PS4 controller: left bumper.
+	**/
 	public var PS4_LEFTBUMPER = 43;
+	/**
+		PS4 controller: right bumper.
+	**/
 	public var PS4_RIGHTBUMPER = 44;
+	/**
+		PS4 controller: Options button.
+	**/
 	public var PS4_OPTIONS = 45;
+	/**
+		PS4 controller: Share button.
+	**/
 	public var PS4_SHARE = 46;
+	/**
+		PS4 controller: left trackpad, touch.
+	**/
 	public var PS4_LEFTPAD_TOUCH = 47;
+	/**
+		PS4 controller: left trackpad, swipe.
+	**/
 	public var PS4_LEFTPAD_SWIPE = 48;
+	/**
+		PS4 controller: left trackpad, click.
+	**/
 	public var PS4_LEFTPAD_CLICK = 49;
+	/**
+		PS4 controller: left trackpad, up.
+	**/
 	public var PS4_LEFTPAD_DPADNORTH = 50;
+	/**
+		PS4 controller: left trackpad, down.
+	**/
 	public var PS4_LEFTPAD_DPADSOUTH = 51;
+	/**
+		PS4 controller: left trackpad, left.
+	**/
 	public var PS4_LEFTPAD_DPADWEST = 52;
+	/**
+		PS4 controller: left trackpad, right.
+	**/
 	public var PS4_LEFTPAD_DPADEAST = 53;
+	/**
+		PS4 controller: right trackpad, touch.
+	**/
 	public var PS4_RIGHTPAD_TOUCH = 54;
+	/**
+		PS4 controller: right trackpad, swipe.
+	**/
 	public var PS4_RIGHTPAD_SWIPE = 55;
+	/**
+		PS4 controller: right trackpad, click.
+	**/
 	public var PS4_RIGHTPAD_CLICK = 56;
+	/**
+		PS4 controller: right trackpad, up.
+	**/
 	public var PS4_RIGHTPAD_DPADNORTH = 57;
+	/**
+		PS4 controller: right trackpad, down.
+	**/
 	public var PS4_RIGHTPAD_DPADSOUTH = 58;
+	/**
+		PS4 controller: right trackpad, left.
+	**/
 	public var PS4_RIGHTPAD_DPADWEST = 59;
+	/**
+		PS4 controller: right trackpad, right.
+	**/
 	public var PS4_RIGHTPAD_DPADEAST = 60;
+	/**
+		PS4 controller: center trackpad, touch.
+	**/
 	public var PS4_CENTERPAD_TOUCH = 61;
+	/**
+		PS4 controller: center trackpad, swipe.
+	**/
 	public var PS4_CENTERPAD_SWIPE = 62;
+	/**
+		PS4 controller: center trackpad, click.
+	**/
 	public var PS4_CENTERPAD_CLICK = 63;
+	/**
+		PS4 controller: center trackpad, up.
+	**/
 	public var PS4_CENTERPAD_DPADNORTH = 64;
+	/**
+		PS4 controller: center trackpad, down.
+	**/
 	public var PS4_CENTERPAD_DPADSOUTH = 65;
+	/**
+		PS4 controller: center trackpad, left.
+	**/
 	public var PS4_CENTERPAD_DPADWEST = 66;
+	/**
+		PS4 controller: center trackpad, right.
+	**/
 	public var PS4_CENTERPAD_DPADEAST = 67;
+	/**
+		PS4 controller: left trigger, pull.
+	**/
 	public var PS4_LEFTTRIGGER_PULL = 68;
+	/**
+		PS4 controller: left trigger, click.
+	**/
 	public var PS4_LEFTTRIGGER_CLICK = 69;
+	/**
+		PS4 controller: right trigger, pull.
+	**/
 	public var PS4_RIGHTTRIGGER_PULL = 70;
+	/**
+		PS4 controller: right trigger, click.
+	**/
 	public var PS4_RIGHTTRIGGER_CLICK = 71;
+	/**
+		PS4 controller: left stick, move.
+	**/
 	public var PS4_LEFTSTICK_MOVE = 72;
+	/**
+		PS4 controller: left stick, click.
+	**/
 	public var PS4_LEFTSTICK_CLICK = 73;
+	/**
+		PS4 controller: left stick, up.
+	**/
 	public var PS4_LEFTSTICK_DPADNORTH = 74;
+	/**
+		PS4 controller: left stick, down.
+	**/
 	public var PS4_LEFTSTICK_DPADSOUTH = 75;
+	/**
+		PS4 controller: left stick, left.
+	**/
 	public var PS4_LEFTSTICK_DPADWEST = 76;
+	/**
+		PS4 controller: left stick, right.
+	**/
 	public var PS4_LEFTSTICK_DPADEAST = 77;
+	/**
+		PS4 controller: right stick, move.
+	**/
 	public var PS4_RIGHTSTICK_MOVE = 78;
+	/**
+		PS4 controller: right stick, click.
+	**/
 	public var PS4_RIGHTSTICK_CLICK = 79;
+	/**
+		PS4 controller: right stick, up.
+	**/
 	public var PS4_RIGHTSTICK_DPADNORTH = 80;
+	/**
+		PS4 controller: right stick, down.
+	**/
 	public var PS4_RIGHTSTICK_DPADSOUTH = 81;
+	/**
+		PS4 controller: right stick, left.
+	**/
 	public var PS4_RIGHTSTICK_DPADWEST = 82;
+	/**
+		PS4 controller: right stick, right.
+	**/
 	public var PS4_RIGHTSTICK_DPADEAST = 83;
+	/**
+		PS4 controller: D-pad, up.
+	**/
 	public var PS4_DPAD_NORTH = 84;
+	/**
+		PS4 controller: D-pad, down.
+	**/
 	public var PS4_DPAD_SOUTH = 85;
+	/**
+		PS4 controller: D-pad, left.
+	**/
 	public var PS4_DPAD_WEST = 86;
+	/**
+		PS4 controller: D-pad, right.
+	**/
 	public var PS4_DPAD_EAST = 87;
+	/**
+		PS4 controller: gyro, move.
+	**/
 	public var PS4_GYRO_MOVE = 88;
+	/**
+		PS4 controller: gyro, pitch.
+	**/
 	public var PS4_GYRO_PITCH = 89;
+	/**
+		PS4 controller: gyro, yaw.
+	**/
 	public var PS4_GYRO_YAW = 90;
+	/**
+		PS4 controller: gyro, roll.
+	**/
 	public var PS4_GYRO_ROLL = 91;
 
 	//Microsoft XBox One:
+	/**
+		Xbox One controller: A button.
+	**/
 	public var XBOXONE_A = 92;
+	/**
+		Xbox One controller: B button.
+	**/
 	public var XBOXONE_B = 93;
+	/**
+		Xbox One controller: X button.
+	**/
 	public var XBOXONE_X = 94;
+	/**
+		Xbox One controller: Y button.
+	**/
 	public var XBOXONE_Y = 95;
+	/**
+		Xbox One controller: left bumper.
+	**/
 	public var XBOXONE_LEFTBUMPER = 96;
+	/**
+		Xbox One controller: right bumper.
+	**/
 	public var XBOXONE_RIGHTBUMPER = 97;
+	/**
+		Xbox One controller: Menu button.
+	**/
 	public var XBOXONE_MENU = 98;
+	/**
+		Xbox One controller: View button.
+	**/
 	public var XBOXONE_VIEW = 99;
+	/**
+		Xbox One controller: left trigger, pull.
+	**/
 	public var XBOXONE_LEFTTRIGGER_PULL = 100;
+	/**
+		Xbox One controller: left trigger, click.
+	**/
 	public var XBOXONE_LEFTTRIGGER_CLICK = 101;
+	/**
+		Xbox One controller: right trigger, pull.
+	**/
 	public var XBOXONE_RIGHTTRIGGER_PULL = 102;
+	/**
+		Xbox One controller: right trigger, click.
+	**/
 	public var XBOXONE_RIGHTTRIGGER_CLICK = 103;
+	/**
+		Xbox One controller: left stick, move.
+	**/
 	public var XBOXONE_LEFTSTICK_MOVE = 104;
+	/**
+		Xbox One controller: left stick, click.
+	**/
 	public var XBOXONE_LEFTSTICK_CLICK = 105;
+	/**
+		Xbox One controller: left stick, up.
+	**/
 	public var XBOXONE_LEFTSTICK_DPADNORTH = 106;
+	/**
+		Xbox One controller: left stick, down.
+	**/
 	public var XBOXONE_LEFTSTICK_DPADSOUTH = 107;
+	/**
+		Xbox One controller: left stick, left.
+	**/
 	public var XBOXONE_LEFTSTICK_DPADWEST = 108;
+	/**
+		Xbox One controller: left stick, right.
+	**/
 	public var XBOXONE_LEFTSTICK_DPADEAST = 109;
+	/**
+		Xbox One controller: right stick, move.
+	**/
 	public var XBOXONE_RIGHTSTICK_MOVE = 110;
+	/**
+		Xbox One controller: right stick, click.
+	**/
 	public var XBOXONE_RIGHTSTICK_CLICK = 111;
+	/**
+		Xbox One controller: right stick, up.
+	**/
 	public var XBOXONE_RIGHTSTICK_DPADNORTH = 112;
+	/**
+		Xbox One controller: right stick, down.
+	**/
 	public var XBOXONE_RIGHTSTICK_DPADSOUTH = 113;
+	/**
+		Xbox One controller: right stick, left.
+	**/
 	public var XBOXONE_RIGHTSTICK_DPADWEST = 114;
+	/**
+		Xbox One controller: right stick, right.
+	**/
 	public var XBOXONE_RIGHTSTICK_DPADEAST = 115;
+	/**
+		Xbox One controller: D-pad, up.
+	**/
 	public var XBOXONE_DPAD_NORTH = 116;
+	/**
+		Xbox One controller: D-pad, down.
+	**/
 	public var XBOXONE_DPAD_SOUTH = 117;
+	/**
+		Xbox One controller: D-pad, left.
+	**/
 	public var XBOXONE_DPAD_WEST = 118;
+	/**
+		Xbox One controller: D-pad, right.
+	**/
 	public var XBOXONE_DPAD_EAST = 119;
 
 	//Microsoft XBox 360:
+	/**
+		Xbox 360 controller: A button.
+	**/
 	public var XBOX360_A = 120;
+	/**
+		Xbox 360 controller: B button.
+	**/
 	public var XBOX360_B = 121;
+	/**
+		Xbox 360 controller: X button.
+	**/
 	public var XBOX360_X = 122;
+	/**
+		Xbox 360 controller: Y button.
+	**/
 	public var XBOX360_Y = 123;
+	/**
+		Xbox 360 controller: left bumper.
+	**/
 	public var XBOX360_LEFTBUMPER = 124;
+	/**
+		Xbox 360 controller: right bumper.
+	**/
 	public var XBOX360_RIGHTBUMPER = 125;
+	/**
+		Xbox 360 controller: start button.
+	**/
 	public var XBOX360_START = 126;
+	/**
+		Xbox 360 controller: back button.
+	**/
 	public var XBOX360_BACK = 127;
+	/**
+		Xbox 360 controller: left trigger, pull.
+	**/
 	public var XBOX360_LEFTTRIGGER_PULL = 128;
+	/**
+		Xbox 360 controller: left trigger, click.
+	**/
 	public var XBOX360_LEFTTRIGGER_CLICK = 129;
+	/**
+		Xbox 360 controller: right trigger, pull.
+	**/
 	public var XBOX360_RIGHTTRIGGER_PULL = 130;
+	/**
+		Xbox 360 controller: right trigger, click.
+	**/
 	public var XBOX360_RIGHTTRIGGER_CLICK = 131;
+	/**
+		Xbox 360 controller: left stick, move.
+	**/
 	public var XBOX360_LEFTSTICK_MOVE = 132;
+	/**
+		Xbox 360 controller: left stick, click.
+	**/
 	public var XBOX360_LEFTSTICK_CLICK = 133;
+	/**
+		Xbox 360 controller: left stick, up.
+	**/
 	public var XBOX360_LEFTSTICK_DPADNORTH = 134;
+	/**
+		Xbox 360 controller: left stick, down.
+	**/
 	public var XBOX360_LEFTSTICK_DPADSOUTH = 135;
+	/**
+		Xbox 360 controller: left stick, left.
+	**/
 	public var XBOX360_LEFTSTICK_DPADWEST = 136;
+	/**
+		Xbox 360 controller: left stick, right.
+	**/
 	public var XBOX360_LEFTSTICK_DPADEAST = 137;
+	/**
+		Xbox 360 controller: right stick, move.
+	**/
 	public var XBOX360_RIGHTSTICK_MOVE = 138;
+	/**
+		Xbox 360 controller: right stick, click.
+	**/
 	public var XBOX360_RIGHTSTICK_CLICK = 139;
+	/**
+		Xbox 360 controller: right stick, up.
+	**/
 	public var XBOX360_RIGHTSTICK_DPADNORTH = 140;
+	/**
+		Xbox 360 controller: right stick, down.
+	**/
 	public var XBOX360_RIGHTSTICK_DPADSOUTH = 141;
+	/**
+		Xbox 360 controller: right stick, left.
+	**/
 	public var XBOX360_RIGHTSTICK_DPADWEST = 142;
+	/**
+		Xbox 360 controller: right stick, right.
+	**/
 	public var XBOX360_RIGHTSTICK_DPADEAST = 143;
+	/**
+		Xbox 360 controller: D-pad, up.
+	**/
 	public var XBOX360_DPAD_NORTH = 144;
+	/**
+		Xbox 360 controller: D-pad, down.
+	**/
 	public var XBOX360_DPAD_SOUTH = 145;
+	/**
+		Xbox 360 controller: D-pad, left.
+	**/
 	public var XBOX360_DPAD_WEST = 146;
+	/**
+		Xbox 360 controller: D-pad, right.
+	**/
 	public var XBOX360_DPAD_EAST = 147;
 
+	/**
+		The number of origins.
+	**/
 	public var COUNT = 148;
 
+	/**
+		An unknown origin.
+	**/
 	public var UNKNOWN = -1;
 
 	@:from private static function fromString (s:String):EControllerActionOrigin {
@@ -784,6 +1328,9 @@ enum abstract EControllerActionOrigin(Int) to Int {
 
 	}
 
+	/**
+		Returns the name of the origin, or `unknown`.
+	**/
 	@:to public inline function toString():String {
 
 		if (toStringMap.exists(cast this))
@@ -965,48 +1512,153 @@ enum abstract EControllerActionOrigin(Int) to Int {
 
 }
 
+/**
+	A trackpad of the Steam Controller, for the haptic pulses.
+**/
 enum abstract ESteamControllerPad(Int) to Int {
+	/**
+		The left trackpad.
+	**/
 	public var LEFT = 0;
+	/**
+		The right trackpad.
+	**/
 	public var RIGHT = 1;
+	/**
+		Both trackpads.
+	**/
 	public var BOTH = 2;
 }
 
+/**
+	A source of input of a controller (Steamworks `EControllerSource`).
+**/
 enum abstract EControllerSource(Int) to Int {
+	/**
+		No source.
+	**/
 	public var NONE = 0;
+	/**
+		The left trackpad.
+	**/
 	public var LEFTTRACKPAD = 1;
+	/**
+		The right trackpad.
+	**/
 	public var RIGHTTRACKPAD = 2;
+	/**
+		The joystick.
+	**/
 	public var JOYSTICK = 3;
+	/**
+		The face buttons.
+	**/
 	public var ABXY = 4;
+	/**
+		The bumpers, grips and menu buttons.
+	**/
 	public var SWITCH = 5;
+	/**
+		The left trigger.
+	**/
 	public var LEFTTRIGGER = 6;
+	/**
+		The right trigger.
+	**/
 	public var RIGHTTRIGGER = 7;
+	/**
+		The gyroscope.
+	**/
 	public var GYRO = 8;
+	/**
+		The number of sources.
+	**/
 	public var COUNT = 9;
 }
 
+/**
+	How a source of input is used (Steamworks `EControllerSourceMode`).
+**/
 enum abstract EControllerSourceMode(Int) to Int {
+	/**
+		Not used.
+	**/
 	public var NONE = 0;
+	/**
+		As a D-pad.
+	**/
 	public var DPAD = 1;
+	/**
+		As buttons.
+	**/
 	public var BUTTONS = 2;
+	/**
+		As four buttons.
+	**/
 	public var FOURBUTTONS = 3;
+	/**
+		As an absolute mouse.
+	**/
 	public var ABSOLUTEMOUSE = 4;
+	/**
+		As a relative mouse.
+	**/
 	public var RELATIVEMOUSE = 5;
+	/**
+		As a joystick for movement.
+	**/
 	public var JOYSTICKMOVE = 6;
+	/**
+		As a joystick for the camera.
+	**/
 	public var JOYSTICKCAMERA = 7;
+	/**
+		As a scroll wheel.
+	**/
 	public var SCROLLWHEEL = 8;
+	/**
+		As a trigger.
+	**/
 	public var TRIGGER = 9;
+	/**
+		As a touch menu.
+	**/
 	public var TOUCHMENU = 10;
+	/**
+		As a mouse joystick.
+	**/
 	public var MOUSEJOYSTICK = 11;
+	/**
+		As a mouse region.
+	**/
 	public var MOUSEREGION = 12;
 }
 
+/**
+	The number of lines of the gamepad text input.
+**/
 enum abstract EGamepadTextInputLineMode(Int) to Int {
+	/**
+		A single line.
+	**/
 	public var SINGLE_LINE = 0;
+	/**
+		Multiple lines.
+	**/
 	public var MULTIPLE_LINES = 1;
 }
 
+/**
+	The kind of text of the gamepad text input.
+**/
 enum abstract EGamepadTextInputMode(Int) to Int {
+	/**
+		Normal text.
+	**/
 	public var NORMAL = 0;
+	/**
+		A password (hidden).
+	**/
 	public var PASSWORD = 1;
 }
 

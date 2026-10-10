@@ -1,21 +1,42 @@
 package steam;
 
+/**
+	The authentication mode of a game server (Steamworks `EServerMode`).
+**/
 enum abstract ServerMode(Int) {
+	/**
+		No authentication of the users.
+	**/
 	var NoAuthentification = 1;
+	/**
+		The users are authenticated by Steam.
+	**/
 	var Authentification = 2;
+	/**
+		The users are authenticated, and the server is VAC secured.
+	**/
 	var AuthentificationAndSecure = 3;
 }
 
+/**
+	A dedicated game server registered on Steam (Steamworks `SteamGameServer`), and the list of the servers.
+**/
 @:hlNative("steam")
 class GameServer {
 
 	static var initDone = false;
 	static var globalEvents = new Map<Int,Dynamic->Void>();
 
+	/**
+		Sets the function called for a game server callback, by its callback id.
+	**/
 	@:noComplete public static function registerGlobalEvent( event : Int, callb : Dynamic -> Void ) {
 		globalEvents.set(event, callb);
 	}
 
+	/**
+		Initializes the game server on the local IP, with the game and query ports, the authentication mode and the version of the game (`port` is not used). Its callbacks are then run by the main loop. Returns `false` on failure.
+	**/
 	public static function init( ip : sys.net.Host, port : Int, gameport : Int, queryPort : Int, serverMode : ServerMode, version : String ) {
 		var ip = ip.ip;
 		var convIP = (ip >>> 24) | ((ip >> 8) & 0xFF00) | ((ip << 8) & 0xFF0000) | (ip << 24);
@@ -27,10 +48,16 @@ class GameServer {
 		return true;
 	}
 
+	/**
+		Sets the mod folder, the product name and the game description, and marks the server as dedicated.
+	**/
 	public static function setConfig( modDir : String, product : String, desc : String ) {
 		@:privateAccess gameserver_config( modDir.toUtf8(), product.toUtf8(), desc.toUtf8() );
 	}
 
+	/**
+		Sets the information shown in the server browser: maximum players, password protection, name, number of bots and map name.
+	**/
 	public static function setInfo( maxPlayers, password, serverName : String, botCount : Int, mapName : String ) {
 		@:privateAccess gameserver_info( maxPlayers, password, serverName.toUtf8(), botCount, mapName.toUtf8() );
 	}
@@ -45,24 +72,39 @@ class GameServer {
 			customTrace("Unhandled server event #"+event+" ("+data+")");
 	}
 
+	/**
+		Prints a log message of the game server. Prints it with `Sys.println` by default.
+	**/
 	public static dynamic function customTrace(str:String) {
 		Sys.println(str);
 	}
 
+	/**
+		Enables the heartbeats sent to the master server, so that the server is listed.
+	**/
 	@:hlNative("steam", "gameserver_enable_heartbeats")
 	public static function enableHeartbeats( b : Bool ) {
 	}
 
+	/**
+		Returns the public IP of the server.
+	**/
 	@:hlNative("steam", "gameserver_get_public_ip")
 	public static function getPublicIP() : Int {
 		return 0;
 	}
 
+	/**
+		Returns the Steam id of the server.
+	**/
 	@:hlNative("steam", "gameserver_get_steam_id")
 	public static function getSteamID() : UID {
 		return null;
 	}
 
+	/**
+		Logs the server on Steam anonymously, retrying `retries` times: `onLogin` is called with `true` when connected, or `false` on failure. The server logs on again when disconnected.
+	**/
 	public static function logonAnonymous( onLogin : Bool -> Void, retries = 3 ) {
 
 		var ucb = 100;
@@ -106,6 +148,9 @@ class GameServer {
 		});
 	}
 
+	/**
+		Shuts down the game server.
+	**/
 	@:hlNative("steam", "gameserver_shutdown")
 	public static function shutdown() {
 	}
@@ -133,6 +178,9 @@ class GameServer {
 	static function gameserver_info( maxPlayers : Int, password : Bool, serverName : hl.Bytes, botCount : Int, mapName : hl.Bytes ) {
 	}
 
+	/**
+		Requests the list of the internet servers of the app, with Steam server filters (field names and values): `onResults` is called with all the servers.
+	**/
 	public static function requestInternetServerList( appId : Int, ?filters : {}, ?onResults : Array<{ id : UID, ip : Int, port : Int, ping : Int }> -> Void ) {
 		var fields = filters == null ? [] : Reflect.fields(filters);
 		var n = new hl.NativeArray(fields.length * 2);

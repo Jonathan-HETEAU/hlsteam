@@ -1,34 +1,106 @@
 package steam;
 
+/**
+	The callbacks of the peer-to-peer networking, given to `Networking.startP2P`.
+**/
 typedef NetworkApi = {
+	/**
+		Called when a user wants to connect: returns `true` to accept the connection.
+	**/
 	function onConnectionRequest( u : User ) : Bool;
+	/**
+		Called when the connection to a user failed.
+	**/
 	function onConnectionError( u : User, error : NetworkStatus ) : Void;
+	/**
+		Called when a packet was received from a user. With `Networking.USE_MULTITHREAD`, the bytes are only valid during the call.
+	**/
 	function onData( u : User, data : haxe.io.Bytes ) : Void;
 }
 
+/**
+	The error of a peer-to-peer connection (Steamworks `EP2PSessionError`).
+**/
 enum abstract NetworkStatus(Int) {
+	/**
+		No error.
+	**/
 	var None = 0;
+	/**
+		The remote user is not running the same game.
+	**/
 	var NotRunningApp = 1;
+	/**
+		The local user doesn't own the game.
+	**/
 	var NoRigtsToApp = 2;
+	/**
+		The remote user is not logged in to Steam.
+	**/
 	var DestinationNotLoggedIn = 3;
+	/**
+		The connection timed out.
+	**/
 	var Timeout = 4;
 }
 
+/**
+	How a packet is sent (Steamworks `EP2PSend`).
+**/
 enum abstract PacketType(Int) {
+	/**
+		Unreliable, can be dropped or arrive out of order (up to 1200 bytes).
+	**/
 	var Unreliable = 0;
+	/**
+		Unreliable, and dropped if the connection is not established yet.
+	**/
 	var UnreliableNoDelay = 1;
+	/**
+		Reliable and in order (up to 1MB).
+	**/
 	var Reliable = 2;
+	/**
+		Reliable, with small packets grouped together (Nagle algorithm).
+	**/
 	var ReliableWithBuffering = 3;
 }
 
+/**
+	The state of a peer-to-peer session with a user (Steamworks `P2PSessionState_t`).
+**/
 typedef NetworkSessionData = {
+	/**
+		Tells if the connection is being established.
+	**/
 	var connecting : Bool;
+	/**
+		Tells if the connection is established.
+	**/
 	var alive : Bool;
+	/**
+		Tells if the connection goes through a Steam relay server.
+	**/
 	var relay : Bool;
+	/**
+		The last error.
+	**/
 	var error : NetworkStatus;
+	/**
+		The number of bytes waiting to be sent.
+	**/
 	var bytesSendQueue : Int;
+	/**
+		The number of packets waiting to be sent.
+	**/
 	var packetSendQueue : Int;
+	/**
+		The IP of the remote user (if not relayed).
+	**/
 	var remoteIP : Int;
+	/**
+		The port of the remote user (if not relayed).
+	**/
 	var remotePort : Int;
 }
 
@@ -40,6 +112,9 @@ private typedef ThreadData = {
 	var lock : sys.thread.Mutex;
 }
 
+/**
+	The peer-to-peer networking between users (Steamworks `ISteamNetworking`): packets are sent to a user with `sendP2P`, and received by the `NetworkApi` given to `startP2P`.
+**/
 @:hlNative("steam")
 class Networking {
 
@@ -49,6 +124,9 @@ class Networking {
 	static var buffer : hl.Bytes = null;
 	static var bufferSize = 0;
 
+	/**
+		Reads the packets in a separate thread (they are still given to `onData` in the main thread). Must be set before `startP2P`.
+	**/
 	public static var USE_MULTITHREAD(default,set) : Bool;
 
 	static function set_USE_MULTITHREAD(b) {
@@ -58,6 +136,9 @@ class Networking {
 		return b;
 	}
 
+	/**
+		Starts receiving connections and packets with the callbacks of `napi`.
+	**/
 	public static function startP2P( napi : NetworkApi ) {
 		api = napi;
 
@@ -179,6 +260,9 @@ class Networking {
 		}
 	}
 
+	/**
+		Sends `len` bytes of `data` from `pos` (all by default) to the user, opening the connection if needed. Returns `false` on failure.
+	**/
 	public static function sendP2P( user : User, data : haxe.io.Bytes, type : PacketType, pos = 0, len = -1 ) {
 		if( len < 0 ) len = data.length;
 		if( !send_p2p_packet(user.uid, (data:hl.Bytes).offset(pos), len, type, 0) )
@@ -187,6 +271,9 @@ class Networking {
 		return true;
 	}
 
+	/**
+		Closes the connection with the user (after a short delay, so that the pending packets are sent).
+	**/
 	public static function closeSession( user : User ) {
 		@:privateAccess {
 			if( !user.p2pcnx ) return;
@@ -204,6 +291,9 @@ class Networking {
 		}
 	}
 
+	/**
+		Stops receiving packets and closes all the connections.
+	**/
 	public static function closeP2P() {
 		api = null;
 		var cnx = connections;
@@ -213,6 +303,9 @@ class Networking {
 	}
 
 
+	/**
+		Returns the state of the connection with the user.
+	**/
 	public static function getSessionData( user : User ) : NetworkSessionData {
 		return get_p2p_session_data(user.uid);
 	}

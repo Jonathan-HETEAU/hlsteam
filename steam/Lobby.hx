@@ -1,6 +1,12 @@
 package steam;
 
+/**
+	The type of a lobby chat message (Steamworks `EChatEntryType`).
+**/
 enum abstract ChatMessageType(Int) {
+	/**
+		Invalid.
+	**/
 	var Invalid = 0;
 	/** Normal text message from another user **/
 	var ChatMsg = 1;
@@ -24,41 +30,74 @@ enum abstract ChatMessageType(Int) {
 	var LinkBlocked = 14;
 }
 
+/**
+	A Steam lobby: a group of users sharing key/value data and chat messages, used to gather players before a game.
+**/
 @:hlNative("steam")
 @:access(String)
 class Lobby {
 
+	/**
+		The Steam id of the lobby.
+	**/
 	public var uid(default, null) : UID;
+	/**
+		The owner of the lobby.
+	**/
 	public var owner(get, never) : User;
+	/**
+		The maximum number of members.
+	**/
 	public var maxMembers(get, set) : Int;
 
+	/**
+		Creates the lobby of the Steam id.
+	**/
 	public function new(uid:UID) {
 		this.uid = uid;
 	}
 
+	/**
+		Sets a lobby data, serialized with `haxe.Serializer` (owner only).
+	**/
 	public function set( key : String, value : Dynamic ) {
 		setRawData(key, haxe.Serializer.run(value));
 	}
 
+	/**
+		Sets a lobby data (owner only). Throws on failure.
+	**/
 	public function setRawData( key : String, value : String ) {
 		if( !set_lobby_data(uid, key.toUtf8(), value.toUtf8()) )
 			throw "Failed to set lobby data";
 	}
 
+	/**
+		Removes a lobby data (owner only).
+	**/
 	public function remove( key : String ) {
 		return delete_lobby_data(uid, key.toUtf8());
 	}
 
+	/**
+		Returns a lobby data set with `set`, or `null`.
+	**/
 	public function get( key : String ) : Dynamic {
 		var str = getRawData(key);
 		return str == null || str.length == 0 ? null : haxe.Unserializer.run(str);
 	}
 
+	/**
+		Returns a lobby data, or `null`.
+	**/
 	public function getRawData( key : String ) {
 		var v = get_lobby_data(uid, key.toUtf8());
 		return v == null ? null : String.fromUTF8(v);
 	}
 
+	/**
+		Returns all the lobby data. Throws if a value is larger than `maxSize` bytes.
+	**/
 	public function getAllRaw( maxSize = 65536 ) : Map<String,String> {
 		var m = new Map();
 		var tmpKey = new hl.Bytes(256);
@@ -71,6 +110,9 @@ class Lobby {
 		return m;
 	}
 
+	/**
+		Returns all the lobby data. Note: the values are currently returned as raw strings, like `getAllRaw`.
+	**/
 	public function getAll( maxSize = 65536 ) : Map<String,Dynamic> {
 		var m = getAllRaw(maxSize);
 		var out = new Map();
@@ -86,6 +128,9 @@ class Lobby {
 		return m;
 	}
 
+	/**
+		Leaves the lobby, and `dispose`s it.
+	**/
 	public function leave() {
 		dispose();
 		leave_lobby(uid);
@@ -95,23 +140,38 @@ class Lobby {
 		return User.fromUID(get_lobby_owner(uid));
 	}
 
+	/**
+		Joins the lobby: `onJoin` is called with `inviteOnly` set if only invited users can join (Steamworks `m_bLocked`), or `null` on error.
+	**/
 	public function join( onJoin : { inviteOnly : Bool } -> Void ) {
 		return join_lobby(uid, function(v, error) { if( !error ) register(); onJoin(error ? null : { inviteOnly : v }); });
 	}
 
+	/**
+		Returns the members of the lobby (when joined).
+	**/
 	public function getMembers() {
 		return [for( i in 0...get_num_lobby_members(uid) ) User.fromUID(get_lobby_member_by_index(uid, i))];
 	}
 
+	/**
+		Returns a data of a member, or `null`.
+	**/
 	public function getMemberData( user : User, key : String ) : String {
 		var v = get_lobby_member_data(uid, user.uid, key.toUtf8());
 		return v == null ? null : String.fromUTF8(v);
 	}
 
+	/**
+		Sets a data of the current user in the lobby.
+	**/
 	public function setMemberData( key : String, value : String ) {
 		set_lobby_member_data(uid, key.toUtf8(), value.toUtf8());
 	}
 
+	/**
+		Requests the data of a lobby that was not joined: `onDataUpdated` is called when received.
+	**/
 	public function requestData() {
 		register();
 		return request_lobby_data(uid);
@@ -121,21 +181,39 @@ class Lobby {
 		@:privateAccess Matchmaking.lobbies.set(uid.toString(), this);
 	}
 
+	/**
+		Called when the lobby data changed.
+	**/
 	public dynamic function onDataUpdated() {
 	}
 
+	/**
+		Called when the data of a member changed.
+	**/
 	public dynamic function onUserDataUpdated( user : User ) {
 	}
 
+	/**
+		Called when a user joined the lobby.
+	**/
 	public dynamic function onUserJoined( user : User ) {
 	}
 
+	/**
+		Called when a user left the lobby (or disconnected, was kicked or banned).
+	**/
 	public dynamic function onUserLeft( user : User ) {
 	}
 
+	/**
+		Called when a chat message was received: read it with `getChatEntry(cid)`.
+	**/
 	public dynamic function onChatMessage( type : ChatMessageType, cid : Int ) {
 	}
 
+	/**
+		Returns a chat message: its sender, data (at most `maxData` bytes) and type.
+	**/
 	public function getChatEntry( cid : Int, maxData = 1024 ) : { user : User, data : haxe.io.Bytes, type : ChatMessageType } {
 		var tmp = new hl.Bytes(maxData);
 		var type = Invalid;
@@ -144,23 +222,38 @@ class Lobby {
 		return { user : User.fromUID(user), data : tmp.sub(0, len).toBytes(len), type : type };
 	}
 
+	/**
+		Sends a chat message to the members. Throws on failure.
+	**/
 	public function sendChatMessage( bytes : haxe.io.Bytes ) {
 		if( !send_lobby_chat_msg(uid, bytes, bytes.length) )
 			throw "Failed to send chat message";
 	}
 
+	/**
+		Opens the Steam overlay to invite friends to the lobby.
+	**/
 	public function inviteFriends() {
 		lobby_invite_friends(uid);
 	}
 
+	/**
+		Invites a user to the lobby.
+	**/
 	public function inviteUser( user : User ) {
 		return lobby_invite_user(uid, user.uid);
 	}
 
+	/**
+		Returns a description of the lobby.
+	**/
 	public function toString() {
 		return "Lobby#" + uid.toString();
 	}
 
+	/**
+		Stops the callbacks of the lobby.
+	**/
 	public function dispose() {
 		onDataUpdated = function() {};
 		onUserDataUpdated = onUserJoined = onUserLeft = function(_) {};

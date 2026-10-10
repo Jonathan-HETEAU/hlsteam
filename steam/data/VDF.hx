@@ -31,9 +31,36 @@ Minor tweaks for vdfjson by Rob Jackson - rjackson.me.
 Ported to Haxe by Lars Doucet
 */
 
-typedef StrNum = { str:String,  num:Int };
-typedef ObjNum = { obj:Dynamic, num:Int };
+/**
+	A string parsed by `VDF`, with the position after it.
+**/
+typedef StrNum = {
+	/**
+		The string.
+	**/
+	var str : String;
+	/**
+		The position after it.
+	**/
+	var num : Int;
+};
+/**
+	An object parsed by `VDF`, with the position after it.
+**/
+typedef ObjNum = {
+	/**
+		The object.
+	**/
+	var obj : Dynamic;
+	/**
+		The position after it.
+	**/
+	var num : Int;
+};
 
+/**
+	Parses the Valve Data Format (VDF, used by the Steam configuration files) into an object (port of the vdf library by Anthony Garcia).
+**/
 class VDF
 {
 	private static inline var STRING = '"';
@@ -48,6 +75,9 @@ class VDF
 	private static inline var TAB = '\t';
 	private static var WHITESPACE(default, null) = [' ', "\t", "\r", "\n"];
 	
+	/**
+		Parses a VDF text into an object.
+	**/
 	public static function parse(string:String):Dynamic
 	{
 		var _parsed = _parse(string);

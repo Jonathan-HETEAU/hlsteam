@@ -4,6 +4,9 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 using haxe.macro.Tools;
 
+/**
+	Macros used by the `steam` package.
+**/
 class MacroHelper
 {
 	/**
