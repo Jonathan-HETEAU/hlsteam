@@ -4,7 +4,7 @@ package steam.data;
  * ...
  * @author 
  */
-enum abstract Locale(String) from String
+enum abstract Locale(String) from String to String
 {
 	var BRAZILIAN = "brazilian";
 	var BULGARIAN = "bulgarian";
