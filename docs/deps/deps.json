@@ -1,0 +1,614 @@
+{
+ "modules": {
+  "steam.Api": {
+   "file": "steam/Api.hx",
+   "package": "steam",
+   "lines": 766,
+   "doc_blocks": 66,
+   "types": [
+    "enum LeaderboardOp",
+    "enum_abstract SteamNotificationPosition",
+    "typedef ControllerHandle",
+    "typedef ControllerActionSetHandle",
+    "typedef ControllerDigitalActionHandle",
+    "typedef ControllerAnalogActionHandle",
+    "enum_abstract EventType",
+    "class Api",
+    "class LeaderboardScore"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.Controller": [
+     "use"
+    ],
+    "steam.UID": [
+     "use"
+    ],
+    "steam.User": [
+     "use"
+    ],
+    "steam.helpers.Util": [
+     "import",
+     "use"
+    ]
+   },
+   "used_by": [
+    "steam.Cloud",
+    "steam.Controller",
+    "steam.GameServer",
+    "steam.Matchmaking",
+    "steam.Networking",
+    "steam.ugc.Item"
+   ]
+  },
+  "steam.AsyncCall": {
+   "file": "steam/AsyncCall.hx",
+   "package": "steam",
+   "lines": 25,
+   "doc_blocks": 2,
+   "types": [
+    "typedef AsyncData",
+    "abstract AsyncCall"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": [
+    "steam.Cloud",
+    "steam.Lobby",
+    "steam.Matchmaking",
+    "steam.ugc.Item",
+    "steam.ugc.ItemUpdate",
+    "steam.ugc.Query"
+   ]
+  },
+  "steam.Callback": {
+   "file": "steam/Callback.hx",
+   "package": "steam",
+   "lines": 8,
+   "doc_blocks": 1,
+   "types": [
+    "typedef Callback"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": [
+    "steam.Cloud",
+    "steam.Lobby",
+    "steam.Matchmaking",
+    "steam.ugc.Item",
+    "steam.ugc.ItemUpdate",
+    "steam.ugc.Query"
+   ]
+  },
+  "steam.Cloud": {
+   "file": "steam/Cloud.hx",
+   "package": "steam",
+   "lines": 119,
+   "doc_blocks": 14,
+   "types": [
+    "class Cloud"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.Api": [
+     "use"
+    ],
+    "steam.AsyncCall": [
+     "use"
+    ],
+    "steam.Callback": [
+     "use"
+    ],
+    "steam.UID": [
+     "use"
+    ]
+   },
+   "used_by": []
+  },
+  "steam.Controller": {
+   "file": "steam/Controller.hx",
+   "package": "steam",
+   "lines": 1665,
+   "doc_blocks": 220,
+   "types": [
+    "class Controller",
+    "abstract ControllerDigitalActionData",
+    "class ControllerAnalogActionData",
+    "class ControllerMotionData",
+    "class ESteamControllerLEDFlags",
+    "enum_abstract EControllerActionOrigin",
+    "enum_abstract ESteamControllerPad",
+    "enum_abstract EControllerSource",
+    "enum_abstract EControllerSourceMode",
+    "enum_abstract EGamepadTextInputLineMode",
+    "enum_abstract EGamepadTextInputMode"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.Api": [
+     "use"
+    ],
+    "steam.helpers.MacroHelper": [
+     "import",
+     "use"
+    ]
+   },
+   "used_by": [
+    "steam.Api"
+   ]
+  },
+  "steam.Friends": {
+   "file": "steam/Friends.hx",
+   "package": "steam",
+   "lines": 213,
+   "doc_blocks": 43,
+   "types": [
+    "enum_abstract FriendFlags",
+    "enum_abstract OverlayKind",
+    "enum_abstract OverlayToStoreFlag",
+    "class Friends"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.UID": [
+     "use"
+    ],
+    "steam.User": [
+     "use"
+    ]
+   },
+   "used_by": []
+  },
+  "steam.GameServer": {
+   "file": "steam/GameServer.hx",
+   "package": "steam",
+   "lines": 199,
+   "doc_blocks": 16,
+   "types": [
+    "enum_abstract ServerMode",
+    "class GameServer"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.Api": [
+     "use"
+    ],
+    "steam.UID": [
+     "use"
+    ]
+   },
+   "used_by": [
+    "steam.User"
+   ]
+  },
+  "steam.Lobby": {
+   "file": "steam/Lobby.hx",
+   "package": "steam",
+   "lines": 347,
+   "doc_blocks": 41,
+   "types": [
+    "enum_abstract ChatMessageType",
+    "class Lobby"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.AsyncCall": [
+     "use"
+    ],
+    "steam.Callback": [
+     "use"
+    ],
+    "steam.Matchmaking": [
+     "use"
+    ],
+    "steam.UID": [
+     "use"
+    ],
+    "steam.User": [
+     "use"
+    ]
+   },
+   "used_by": [
+    "steam.Matchmaking"
+   ]
+  },
+  "steam.Matchmaking": {
+   "file": "steam/Matchmaking.hx",
+   "package": "steam",
+   "lines": 277,
+   "doc_blocks": 27,
+   "types": [
+    "enum_abstract LobbyKind",
+    "enum_abstract ComparisonFilter",
+    "enum_abstract DistanceFilter",
+    "enum LobbyChatFlag",
+    "typedef LobbyListFilters",
+    "class Matchmaking"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.Api": [
+     "use"
+    ],
+    "steam.AsyncCall": [
+     "use"
+    ],
+    "steam.Callback": [
+     "use"
+    ],
+    "steam.Lobby": [
+     "use"
+    ],
+    "steam.UID": [
+     "use"
+    ],
+    "steam.User": [
+     "use"
+    ]
+   },
+   "used_by": [
+    "steam.Lobby"
+   ]
+  },
+  "steam.Networking": {
+   "file": "steam/Networking.hx",
+   "package": "steam",
+   "lines": 339,
+   "doc_blocks": 31,
+   "types": [
+    "typedef NetworkApi",
+    "enum_abstract NetworkStatus",
+    "enum_abstract PacketType",
+    "typedef NetworkSessionData",
+    "typedef ThreadData",
+    "class Networking"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.Api": [
+     "use"
+    ],
+    "steam.UID": [
+     "use"
+    ],
+    "steam.User": [
+     "use"
+    ]
+   },
+   "used_by": []
+  },
+  "steam.Timeline": {
+   "file": "steam/Timeline.hx",
+   "package": "steam",
+   "lines": 142,
+   "doc_blocks": 23,
+   "types": [
+    "enum_abstract ETimelineGameMode",
+    "enum_abstract ETimelineEventClipPriority",
+    "typedef TimelineEventHandle",
+    "class Timeline",
+    "class TimelineNative"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": []
+  },
+  "steam.UID": {
+   "file": "steam/UID.hx",
+   "package": "steam",
+   "lines": 47,
+   "doc_blocks": 6,
+   "types": [
+    "abstract UID"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": [
+    "steam.Api",
+    "steam.Cloud",
+    "steam.Friends",
+    "steam.GameServer",
+    "steam.Lobby",
+    "steam.Matchmaking",
+    "steam.Networking",
+    "steam.User",
+    "steam.ugc.Item",
+    "steam.ugc.ItemUpdate",
+    "steam.ugc.Query"
+   ]
+  },
+  "steam.User": {
+   "file": "steam/User.hx",
+   "package": "steam",
+   "lines": 202,
+   "doc_blocks": 29,
+   "types": [
+    "enum Changed",
+    "enum AvatarSize",
+    "class User"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.GameServer": [
+     "use"
+    ],
+    "steam.UID": [
+     "use"
+    ]
+   },
+   "used_by": [
+    "steam.Api",
+    "steam.Friends",
+    "steam.Lobby",
+    "steam.Matchmaking",
+    "steam.Networking",
+    "steam.ugc.Query"
+   ]
+  },
+  "steam.data.ControllerConfig": {
+   "file": "steam/data/ControllerConfig.hx",
+   "package": "steam.data",
+   "lines": 400,
+   "doc_blocks": 34,
+   "types": [
+    "class ControllerConfig",
+    "typedef ControllerActionSet",
+    "typedef ButtonAction",
+    "typedef AnalogTriggerAction",
+    "typedef StickPadGyroAction",
+    "typedef ControllerLocalization",
+    "enum AnalogInputMode",
+    "enum ControllerActionType"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.data.Locale": [
+     "import",
+     "use"
+    ],
+    "steam.data.VDF": [
+     "use"
+    ]
+   },
+   "used_by": []
+  },
+  "steam.data.Locale": {
+   "file": "steam/data/Locale.hx",
+   "package": "steam.data",
+   "lines": 161,
+   "doc_blocks": 29,
+   "types": [
+    "enum_abstract Locale"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": [
+    "steam.data.ControllerConfig"
+   ]
+  },
+  "steam.data.VDF": {
+   "file": "steam/data/VDF.hx",
+   "package": "steam.data",
+   "lines": 238,
+   "doc_blocks": 8,
+   "types": [
+    "typedef StrNum",
+    "typedef ObjNum",
+    "class VDF"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": [
+    "steam.data.ControllerConfig"
+   ]
+  },
+  "steam.helpers.MacroHelper": {
+   "file": "steam/helpers/MacroHelper.hx",
+   "package": "steam.helpers",
+   "lines": 61,
+   "doc_blocks": 2,
+   "types": [
+    "class MacroHelper"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": [
+    "steam.Controller"
+   ]
+  },
+  "steam.helpers.Util": {
+   "file": "steam/helpers/Util.hx",
+   "package": "steam.helpers",
+   "lines": 35,
+   "doc_blocks": 4,
+   "types": [
+    "class Util"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": [
+    "steam.Api"
+   ]
+  },
+  "steam.ugc.Data": {
+   "file": "steam/ugc/Data.hx",
+   "package": "steam.ugc",
+   "lines": 511,
+   "doc_blocks": 180,
+   "types": [
+    "enum_abstract EFileType",
+    "enum_abstract EQueryType",
+    "enum_abstract EMatchingType",
+    "enum_abstract EResult",
+    "enum_abstract EItemVisibility",
+    "enum_abstract EUserList",
+    "enum_abstract EUserListSortOrder"
+   ],
+   "heritage": [],
+   "deps": {},
+   "used_by": [
+    "steam.ugc.ItemUpdate",
+    "steam.ugc.Query"
+   ]
+  },
+  "steam.ugc.Item": {
+   "file": "steam/ugc/Item.hx",
+   "package": "steam.ugc",
+   "lines": 251,
+   "doc_blocks": 26,
+   "types": [
+    "enum ItemState",
+    "class Item"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.Api": [
+     "use"
+    ],
+    "steam.AsyncCall": [
+     "use"
+    ],
+    "steam.Callback": [
+     "use"
+    ],
+    "steam.UID": [
+     "import",
+     "use"
+    ]
+   },
+   "used_by": [
+    "steam.ugc.Query"
+   ]
+  },
+  "steam.ugc.ItemUpdate": {
+   "file": "steam/ugc/ItemUpdate.hx",
+   "package": "steam.ugc",
+   "lines": 120,
+   "doc_blocks": 13,
+   "types": [
+    "class ItemUpdate"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.AsyncCall": [
+     "use"
+    ],
+    "steam.Callback": [
+     "use"
+    ],
+    "steam.UID": [
+     "use"
+    ],
+    "steam.ugc.Data": [
+     "import",
+     "use"
+    ]
+   },
+   "used_by": []
+  },
+  "steam.ugc.Query": {
+   "file": "steam/ugc/Query.hx",
+   "package": "steam.ugc",
+   "lines": 368,
+   "doc_blocks": 50,
+   "types": [
+    "class Result",
+    "class Query"
+   ],
+   "heritage": [],
+   "deps": {
+    "steam.AsyncCall": [
+     "use"
+    ],
+    "steam.Callback": [
+     "use"
+    ],
+    "steam.UID": [
+     "import",
+     "use"
+    ],
+    "steam.User": [
+     "use"
+    ],
+    "steam.ugc.Data": [
+     "import",
+     "use"
+    ],
+    "steam.ugc.Item": [
+     "use"
+    ]
+   },
+   "used_by": []
+  }
+ },
+ "doc_order": [
+  [
+   "steam.helpers.MacroHelper"
+  ],
+  [
+   "steam.UID"
+  ],
+  [
+   "steam.helpers.Util"
+  ],
+  [
+   "steam.Api",
+   "steam.Controller",
+   "steam.GameServer",
+   "steam.User"
+  ],
+  [
+   "steam.AsyncCall"
+  ],
+  [
+   "steam.Callback"
+  ],
+  [
+   "steam.Cloud"
+  ],
+  [
+   "steam.Friends"
+  ],
+  [
+   "steam.Lobby",
+   "steam.Matchmaking"
+  ],
+  [
+   "steam.Networking"
+  ],
+  [
+   "steam.Timeline"
+  ],
+  [
+   "steam.data.Locale"
+  ],
+  [
+   "steam.data.VDF"
+  ],
+  [
+   "steam.data.ControllerConfig"
+  ],
+  [
+   "steam.ugc.Data"
+  ],
+  [
+   "steam.ugc.Item"
+  ],
+  [
+   "steam.ugc.ItemUpdate"
+  ],
+  [
+   "steam.ugc.Query"
+  ]
+ ],
+ "package_edges": {
+  "steam": {
+   "steam.helpers": 2
+  },
+  "steam.data": {},
+  "steam.helpers": {},
+  "steam.ugc": {
+   "steam": 11
+  }
+ }
+}

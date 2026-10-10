@@ -1,0 +1,83 @@
+# hlsteam
+
+> hlsteam is a Haxe wrapper of the Steamworks API for HashLink (native library `steam.hdll`): initialization and callbacks (`steam.Api`), achievements, stats and leaderboards, cloud files, Workshop (UGC), friends, lobbies and matchmaking, networking, game servers, timeline and Steam Input controllers. See the README for the setup.
+
+Each link points to a Markdown page with the full public API of a type: signatures, documentation, inheritance and platform availability. File dependency map: [deps/DEPENDENCIES.md](deps/DEPENDENCIES.md).
+
+## steam
+
+- [steam.Api](api/md/steam/Api.md): The entry point of the Steam API: call `init` at startup, then use the functions of this class (achievements, stats, leaderboards, overlay, ownership) and of the other classes of the `steam` package.
+- [steam.AsyncCall](api/md/steam/AsyncCall.md): A pending asynchronous Steam call: its callback is called when it completes, unless it is cancelled.
+- [steam.AvatarSize](api/md/steam/AvatarSize.md): The size of an avatar image.
+- [steam.Callback](api/md/steam/Callback.md): The callback of an asynchronous Steam call: the result, and `true` if the call failed.
+- [steam.Changed](api/md/steam/Changed.md): The information of a user that changed (Steamworks `EPersonaChange`), given to the `User.requestInformation` callback.
+- [steam.ChatMessageType](api/md/steam/ChatMessageType.md): The type of a lobby chat message (Steamworks `EChatEntryType`).
+- [steam.Cloud](api/md/steam/Cloud.md): Steam Cloud: the files of the user stored by Steam and synchronized between computers (Steamworks `ISteamRemoteStorage`).
+- [steam.ComparisonFilter](api/md/steam/ComparisonFilter.md): A comparison of a lobby list filter (Steamworks `ELobbyComparison`): how the lobby value compares to the filter value.
+- [steam.Controller](api/md/steam/Controller.md): * The Steam Controller API.
+- [steam.ControllerActionSetHandle](api/md/steam/ControllerActionSetHandle.md): A handle of a controller action set.
+- [steam.ControllerAnalogActionData](api/md/steam/ControllerAnalogActionData.md): The state of an analog action.
+- [steam.ControllerAnalogActionHandle](api/md/steam/ControllerAnalogActionHandle.md): A handle of an analog controller action.
+- [steam.ControllerDigitalActionData](api/md/steam/ControllerDigitalActionData.md): The state of a digital action.
+- [steam.ControllerDigitalActionHandle](api/md/steam/ControllerDigitalActionHandle.md): A handle of a digital (button) controller action.
+- [steam.ControllerHandle](api/md/steam/ControllerHandle.md): A handle of a connected controller (Steam Input).
+- [steam.ControllerMotionData](api/md/steam/ControllerMotionData.md): The motion data of a controller.
+- [steam.DistanceFilter](api/md/steam/DistanceFilter.md): The geographic distance of the lobbies to list (Steamworks `ELobbyDistanceFilter`).
+- [steam.EControllerActionOrigin](api/md/steam/EControllerActionOrigin.md): A physical input of a controller bound to an action (Steamworks `EControllerActionOrigin`).
+- [steam.EControllerSource](api/md/steam/EControllerSource.md): A source of input of a controller (Steamworks `EControllerSource`).
+- [steam.EControllerSourceMode](api/md/steam/EControllerSourceMode.md): How a source of input is used (Steamworks `EControllerSourceMode`).
+- [steam.EGamepadTextInputLineMode](api/md/steam/EGamepadTextInputLineMode.md): The number of lines of the gamepad text input.
+- [steam.EGamepadTextInputMode](api/md/steam/EGamepadTextInputMode.md): The kind of text of the gamepad text input.
+- [steam.ESteamControllerLEDFlags](api/md/steam/ESteamControllerLEDFlags.md): The flags of `Controller.setLEDColor`.
+- [steam.ESteamControllerPad](api/md/steam/ESteamControllerPad.md): A trackpad of the Steam Controller, for the haptic pulses.
+- [steam.ETimelineEventClipPriority](api/md/steam/ETimelineEventClipPriority.md): Whether a timeline event is a good candidate for a clip (Steamworks `ETimelineEventClipPriority`).
+- [steam.ETimelineGameMode](api/md/steam/ETimelineGameMode.md): The mode of the game shown in the Steam timeline (Steamworks `ETimelineGameMode`).
+- [steam.EventType](api/md/steam/EventType.md): The events sent by the native library to `Api` (handled internally).
+- [steam.FriendFlags](api/md/steam/FriendFlags.md): The relationships to list with `Friends.getFriends` (Steamworks `EFriendFlags`), combined with `|`.
+- [steam.Friends](api/md/steam/Friends.md): The friends of the user, the overlay dialogs and the rich presence (Steamworks `ISteamFriends`).
+- [steam.GameServer](api/md/steam/GameServer.md): A dedicated game server registered on Steam (Steamworks `SteamGameServer`), and the list of the servers.
+- [steam.LeaderboardScore](api/md/steam/LeaderboardScore.md): A leaderboard score.
+- [steam.Lobby](api/md/steam/Lobby.md): A Steam lobby: a group of users sharing key/value data and chat messages, used to gather players before a game.
+- [steam.LobbyKind](api/md/steam/LobbyKind.md): The visibility of a lobby (Steamworks `ELobbyType`).
+- [steam.LobbyListFilters](api/md/steam/LobbyListFilters.md): The filters of `Matchmaking.requestLobbyList`.
+- [steam.Matchmaking](api/md/steam/Matchmaking.md): The lobbies: creation, search and invitations (Steamworks `ISteamMatchmaking`).
+- [steam.NetworkApi](api/md/steam/NetworkApi.md): The callbacks of the peer-to-peer networking, given to `Networking.startP2P`.
+- [steam.NetworkSessionData](api/md/steam/NetworkSessionData.md): The state of a peer-to-peer session with a user (Steamworks `P2PSessionState_t`).
+- [steam.NetworkStatus](api/md/steam/NetworkStatus.md): The error of a peer-to-peer connection (Steamworks `EP2PSessionError`).
+- [steam.Networking](api/md/steam/Networking.md): The peer-to-peer networking between users (Steamworks `ISteamNetworking`): packets are sent to a user with `sendP2P`, and received by the `NetworkApi` given to `startP2P`.
+- [steam.OverlayKind](api/md/steam/OverlayKind.md): A dialog of the Steam overlay, opened with `Friends.activateOverlay`.
+- [steam.OverlayToStoreFlag](api/md/steam/OverlayToStoreFlag.md): What to do when opening the store page in the overlay (Steamworks `EOverlayToStoreFlag`).
+- [steam.PacketType](api/md/steam/PacketType.md): How a packet is sent (Steamworks `EP2PSend`).
+- [steam.ServerMode](api/md/steam/ServerMode.md): The authentication mode of a game server (Steamworks `EServerMode`).
+- [steam.SteamNotificationPosition](api/md/steam/SteamNotificationPosition.md): A corner of the screen where the Steam notifications appear.
+- [steam.Timeline](api/md/steam/Timeline.md): The Steam timeline of the game recordings (Steamworks `ISteamTimeline`): game modes, tooltips and events marking the important moments.
+- [steam.TimelineEventHandle](api/md/steam/TimelineEventHandle.md): A handle of a timeline event.
+- [steam.TimelineNative](api/md/steam/TimelineNative.md): The native functions of `Timeline`.
+- [steam.UID](api/md/steam/UID.md): A 64 bits Steam identifier (`CSteamID`: user, lobby, game server...) or Workshop file identifier, stored as 8 bytes.
+- [steam.User](api/md/steam/User.md): A Steam user.
+- [steam.data.AnalogInputMode](api/md/steam/data/AnalogInputMode.md): The input mode of a stick, pad or gyro action.
+- [steam.data.AnalogTriggerAction](api/md/steam/data/AnalogTriggerAction.md): An analog trigger action.
+- [steam.data.ButtonAction](api/md/steam/data/ButtonAction.md): A digital (button) action.
+- [steam.data.ControllerActionSet](api/md/steam/data/ControllerActionSet.md): An action set: the actions available in a context of the game (menu, gameplay...).
+- [steam.data.ControllerActionType](api/md/steam/data/ControllerActionType.md): The type of a controller action.
+- [steam.data.ControllerConfig](api/md/steam/data/ControllerConfig.md): * A strongly-typed data structure representation of the "game_actions_xyz.vdf" * file Steam uses to define controller inputs for your game.
+- [steam.data.ControllerLocalization](api/md/steam/data/ControllerLocalization.md): The localized texts of a language.
+- [steam.data.Locale](api/md/steam/data/Locale.md): A language name of the Steam API (as returned by `steam.Api.getCurrentGameLanguage`).
+- [steam.data.ObjNum](api/md/steam/data/ObjNum.md): An object parsed by `VDF`, with the position after it.
+- [steam.data.StickPadGyroAction](api/md/steam/data/StickPadGyroAction.md): A stick, pad or gyro action.
+- [steam.data.StrNum](api/md/steam/data/StrNum.md): A string parsed by `VDF`, with the position after it.
+- [steam.data.VDF](api/md/steam/data/VDF.md): Parses the Valve Data Format (VDF, used by the Steam configuration files) into an object (port of the vdf library by Anthony Garcia).
+- [steam.helpers.MacroHelper](api/md/steam/helpers/MacroHelper.md): Macros used by the `steam` package.
+- [steam.helpers.Util](api/md/steam/helpers/Util.md): String conversion helpers.
+- [steam.ugc.EFileType](api/md/steam/ugc/EFileType.md): The type of a Workshop item (Steamworks `EWorkshopFileType`).
+- [steam.ugc.EItemVisibility](api/md/steam/ugc/EItemVisibility.md): The visibility of a Workshop item (Steamworks `ERemoteStoragePublishedFileVisibility`).
+- [steam.ugc.EMatchingType](api/md/steam/ugc/EMatchingType.md): The kind of Workshop items returned by a query (Steamworks `EUGCMatchingUGCType`).
+- [steam.ugc.EQueryType](api/md/steam/ugc/EQueryType.md): How the items of a Workshop query of all the items are ranked (Steamworks `EUGCQuery`).
+- [steam.ugc.EResult](api/md/steam/ugc/EResult.md): The result of a Steam operation (Steamworks `EResult`).
+- [steam.ugc.EUserList](api/md/steam/ugc/EUserList.md): The list of items of a user, for a Workshop query (Steamworks `EUserUGCList`).
+- [steam.ugc.EUserListSortOrder](api/md/steam/ugc/EUserListSortOrder.md): The order of the items of a user list query (Steamworks `EUserUGCListSortOrder`).
+- [steam.ugc.Item](api/md/steam/ugc/Item.md): A Workshop item (Steamworks `PublishedFileId_t`).
+- [steam.ugc.ItemState](api/md/steam/ugc/ItemState.md): The state of a Workshop item on the computer (Steamworks `EItemState`).
+- [steam.ugc.ItemUpdate](api/md/steam/ugc/ItemUpdate.md): An update of a Workshop item: set the changes, then `submit` it (Steamworks `UGCUpdateHandle_t`).
+- [steam.ugc.Query](api/md/steam/ugc/Query.md): A query of Workshop items (Steamworks `UGCQueryHandle_t`): create it with `list`, `userList` or `details`, set its options, `send` it, read the results with `getResult`, then `close` it.
+- [steam.ugc.Result](api/md/steam/ugc/Result.md): A Workshop item returned by a `Query` (Steamworks `SteamUGCDetails_t`).
